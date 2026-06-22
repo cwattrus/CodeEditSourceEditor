@@ -42,8 +42,10 @@ class ReformattingGuideView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
 
-        // Determine if we should use light or dark colors based on the theme's background color
-        let isLightMode = theme.background.brightnessComponent > 0.5
+        // Determine if we should use light or dark colors based on the theme's background color.
+        // Guard the colorspace: `.brightnessComponent` throws on a non-RGB
+        // NSColor (greyscale / catalog), so convert first (matches MinimapView).
+        let isLightMode = (theme.background.usingColorSpace(.deviceRGB)?.brightnessComponent ?? 0) > 0.5
 
         // Set the line color based on the theme
         let lineColor = isLightMode ?
