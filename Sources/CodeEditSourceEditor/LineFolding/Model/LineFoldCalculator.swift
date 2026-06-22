@@ -85,7 +85,10 @@ actor LineFoldCalculator {
                         foldCache.append(
                             LineFoldStorage.RawFold(
                                 depth: openFold.depth,
-                                range: openFold.range.lowerBound..<lineInfo.rangeIndice
+                                // Clamp: a stale openFold can outlive a shrunk
+                                // document (async rebuild races a full setText),
+                                // and `lowerBound > upperBound` traps Range.
+                                range: min(openFold.range.lowerBound, lineInfo.rangeIndice)..<lineInfo.rangeIndice
                             )
                         )
                     }
@@ -100,7 +103,8 @@ actor LineFoldCalculator {
             foldCache.append(
                 LineFoldStorage.RawFold(
                     depth: fold.depth,
-                    range: fold.range.lowerBound..<documentRange.length
+                    // Clamp: see note above — guards `lowerBound > upperBound`.
+                    range: min(fold.range.lowerBound, documentRange.length)..<documentRange.length
                 )
             )
         }
